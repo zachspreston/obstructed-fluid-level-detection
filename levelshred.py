@@ -75,12 +75,61 @@ def find_contour_widths(bottle_contour, x_penalty_offset=0):
     return contour_widths
 
 
+
+
+# Function takes in contour of container and returns an array of the width of the contour 
+# at each y px of the contour where width of label_contour is subtracted
+# the 'width' will be width of contour after negating the penalty zone
+def find_contour_with_label_widths(bottle_contour, label_contour=[], x_penalty_offset=0):
+
+    # find container contour widths
+    container_contour_widths = find_contour_widths(bottle_contour, x_penalty_offset=6)
+
+    print('bottle contour:')
+    print(bottle_contour)
+   
+    if (label_contour == []):
+        return container_contour_widths
+
+    # Account for numpy being picky in formatting
+    label_contour = np.array([label_contour[0]])
+
+    #determine dimensions and position of the label contour
+    (x_bottle, y_bottle, w, h) = cv2.boundingRect(bottle_contour)
+
+    (x_label, y_label, w_label, h_label) = cv2.boundingRect(label_contour)
+    # label_contour_centre_line = int(x_label+w_label/2)
+
+    # # find label contour widths
+    label_contour_widths = find_contour_widths(label_contour, x_penalty_offset=6)
+    
+    # update each width over the range of the label contour
+    for i in range(0, h_label):
+        #print('before: {}'.format(container_contour_widths[i]))
+        container_contour_widths[i+(y_label-y_bottle)] -= label_contour_widths[i]
+        #print('after: {}'.format(container_contour_widths[i]))
+
+
+    return container_contour_widths
+    
+
+
+
+
+
+
+
+
+
+
+
 # Method to execute the gradient test
 #TODO: This can be made cleaner using median filter and differentiating the function
 def gradient_test(lvshred_column, container_contour, running_viable_y_pts_tally, label_contour=[], gradient_threshold=1.5, window_size=15, x_penalty_offset=0):
     
     viable_y_pts=[]
     unviable_y_pts=[]
+    is_in_label_contour = 0 #pre-set assuming no label
     i = lvshred_column.x
     
     for j in range(0, len(lvshred_column.smoothed_px_intensities[:-window_size]), int(window_size/2)):
@@ -95,8 +144,9 @@ def gradient_test(lvshred_column, container_contour, running_viable_y_pts_tally,
             is_in_contour = cv2.pointPolygonTest(container_contour, (x_no_penalty,lvshred_column.y_indicies[curr_y_index]), False)
             
             if (label_contour != []):
+                #TODO: setup a label penalty zone
                 is_in_label_contour = cv2.pointPolygonTest(label_contour[0], (i,lvshred_column.y_indicies[curr_y_index]), False)
-
+                
             
             # pointPolygonTest returns a 1 if the point is within the contour (accountinf for the penalty offset)
             if (is_in_contour == 1 and is_in_label_contour != 1):
@@ -153,7 +203,8 @@ def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0
    
     # Determine the width of each row in the bottle contour
     # index 0 is the lowest y-index row within the contour
-    container_contour_widths = find_contour_widths(container_contour, x_penalty_offset=6)
+    #container_contour_widths = find_contour_widths(container_contour, x_penalty_offset=6)
+    container_contour_widths = find_contour_with_label_widths(container_contour, label_contour, x_penalty_offset=6)
 
     # STEP 4.
     # Setup levelshred column objects for the mode specifed by the input parameters
@@ -215,8 +266,9 @@ def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0
     max_weighted_viable_level_tally = max(weighted_viable_level_tally)
     fluid_level_y = lvshred_y_lim[0] + weighted_viable_level_tally.index(max_weighted_viable_level_tally)
     
-    lvshred_confidence = max_weighted_viable_level_tally # confidence is outputted as the portion of points to the width of the contour
-
+    lvshred_confidence = max_weighted_viable_level_tally + 100*penalty_padding[1] # confidence is outputted as the portion of points to the width of the contour (+ padd]ing)
+    # just incase, '-1' is our error marker
+    lvshred_confidence = lvshred_confidence if lvshred_confidence < 100 else -1
 
 
 
@@ -247,6 +299,7 @@ def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0
         bottle_debug_obj.lower_x_watershread_lim = lvshred_x_lim[0] 
 
         # watershread results stored as array of WaterShreadColumn objects. Array index matches y-height of contour
+        bottle_debug_obj.contour_widths = container_contour_widths
         bottle_debug_obj.watershread_results = lvshred_columns
         bottle_debug_obj.viable_y_range_pts_count = viable_level_tally # index is the y-height of contour
         bottle_debug_obj.viable_y_range_pts_count_weighted = weighted_viable_level_tally 

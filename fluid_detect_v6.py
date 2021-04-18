@@ -14,9 +14,13 @@ from plot_results import *
 from levelshred import levelshred
 
 # Old version
-# PX_MM_CONVERSION = 0.0034
+#PX_MM_CONVERSION = 0.0034
 # For watershead resolution
-PX_MM_CONVERSION = 0.0023
+PX_MM_CONVERSION = 0.0021
+
+def gen_square_contour(xy1=[], xy2=[]):
+    return [np.array([[xy1[0], xy1[1]], [xy2[0],xy1[1]], [xy2[0],xy2[1]], [xy1[0], xy2[1]]], dtype=np.int32)]
+
 
 
 
@@ -41,10 +45,10 @@ def main():
 
     control_img = cv2.imread("./label_bottle_images/control_img.png")
     
-    # bottle_img = cv2.imread("./label_bottle_images/green_bottle_v1.png")
-    bottle_img = cv2.imread("./label_bottle_images/green_bottle_v_p_covered.png")
+    bottle_img = cv2.imread("./label_bottle_images/green_bottle_v1.png")
+    #bottle_img = cv2.imread("./label_bottle_images/green_bottle_v_p_covered.png")
     
-    bottle_img = cv2.imread("./label_bottle_images/yellow_bottle_v1.png")
+    #ottle_img = cv2.imread("./label_bottle_images/yellow_bottle_v1.png")
     #bottle_img = cv2.imread("./label_bottle_images/yellow_bottle_v_f_covered.png")
     #bottle_img = cv2.imread("./label_bottle_images/yellow_bottle_v_p_covered.png")
     #bottle_img = cv2.imread("./label_bottle_images/watershread_rect.png")
@@ -58,7 +62,13 @@ def main():
 
 
     bottle = Bottle(control_img, bottle_img)
-    bottle.label_contour = [np.array([[367, 425], [478,425], [478, 540], [367, 540]], dtype=np.int32)]
+    
+    # Yellow bottle no label
+    #bottle.label_contour = [np.array([[367, 420], [478,420], [478, 544], [367, 544]], dtype=np.int32)]
+    
+    # Yellow bottle with label
+    #bottle.label_contour = [np.array([[357, 477], [493,477], [493,616], [357, 616]], dtype=np.int32)]
+    #bottle.label_contour = gen_square_contour(xy1=[354,510], xy2=[496,670])
 
 
 
@@ -87,7 +97,7 @@ def main():
 
     ##____________Determine water level_________##
     #bottle = determine_fluid_level(bottle)
-    bottle = watershread_fluid_level_detect(bottle) #still used for processing algorithms
+    #bottle = watershread_fluid_level_detect(bottle) #still used for processing algorithms
 
     
     lvshred_img = bottle.contour_processed_bottle_img_mono
