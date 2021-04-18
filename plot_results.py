@@ -35,6 +35,8 @@ def draw_bottle_and_fluid_contours_and_labels(bottle_obj):
     else:
         cv2.putText(bottle_obj.final_leveled_bottle_img, 'FLUID LV NOT FOUND', (int(bottle_obj.img_width*0.5), int(bottle_obj.img_height*0.98)),  cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 4)
 
+    if (len(bottle_obj.label_contour) > 0):
+        cv2.drawContours(bottle_obj.final_leveled_bottle_img, bottle_obj.label_contour, 0, (0,255,0), 3)
 
 
     return bottle_obj
@@ -280,22 +282,32 @@ def plot_cv_results_label_removal(bottle):
     # plot total px histogram
     plt.subplot(num_rows, num_cols, 7)
     plt.title('Net Vertical Px Histogram')
-    plt.plot(bottle.viable_y_range_pts_count, bottle.symmetry_line_mono_y_vals, marker = 'x', linewidth=0, color='blue', markerfacecolor='green', markersize=5)
+    raw_pts, = plt.plot(bottle.viable_y_range_pts_count, bottle.symmetry_line_mono_y_vals, marker = 'x', linewidth=0, color='blue', markerfacecolor='green', markersize=5, label='Num raw detections')
+    perc_pts, = plt.plot(bottle.viable_y_range_pts_count_weighted, bottle.symmetry_line_mono_y_vals, marker = 'x', linewidth=0, color='green', markerfacecolor='green', markersize=5, label='detections % / width')
     plt.ylim([img_height, 0])
 
 
 
     # Plot line-of-symmetry intensity vals
+    plt.legend(handles=[raw_pts, perc_pts])
     plt.subplot(num_rows, num_cols, 8)
-    plt.title('Watershread Points')
+    plt.title('Levelshred Points')
+
+    # this is illustration of the contour widths determined
+    (x, y, w, h) = cv2.boundingRect(bottle.processed_contour)
+    contour_centre_line = int(x+w/2)
+    for i in range(0,len(bottle.contour_widths)):
+        if (i % 10 == 0):
+            plt.plot([contour_centre_line-bottle.contour_widths[i]/2, contour_centre_line+bottle.contour_widths[i]/2], [y+i, y+i], linewidth=1, color='green')
+
     for col in bottle.watershread_results:
         plt.plot([col.x]*len(col.viable_y_pts), col.viable_y_pts, marker = 'x', linewidth=0, color='red', markerfacecolor='red', markersize=5)
-
-
+        plt.plot([col.x]*len(col.unviable_y_pts), col.unviable_y_pts, marker = 'x', linewidth=0, color='#FCC', markerfacecolor='#FCC', markersize=5)
+    
     
     plt.ylim([img_height, 0])
     plt.xlim([0, img_width])
-
+    plt.gca().set_aspect('equal', adjustable='box')
 
 
 

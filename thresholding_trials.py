@@ -7,6 +7,8 @@ import random as rng
 import matplotlib.pyplot as plt
 
 from contour_class import Bottle
+from process_raw_diff import get_difference_img
+
 
 
 def find_bottle_diff_img(control_img, bottle_img):
@@ -112,6 +114,7 @@ def canny_hull_edge_detection(bottle):
 def canny_edge_detection_v2(bottle):
     
     img_original = bottle.raw_bottle_img
+    #img_original = get_difference_img(bottle.control_img, bottle.raw_bottle_img)
     gray = cv2.cvtColor(img_original, cv2.COLOR_BGR2GRAY)
 
     window_name = 'Canny Contour Detection v2'
@@ -388,6 +391,49 @@ def bottle_interact(bottle):
 
 
 
+def sobel_interaction(bottle):
+    window_name = 'Sobel Interaction'
+    cv2.namedWindow(window_name)
+    cv2.createTrackbar("threshold", window_name, 75, 255, nothing)
+    cv2.createTrackbar("kernel", window_name, 5, 30, nothing)
+    cv2.createTrackbar("iterations", window_name, 1, 10, nothing)
+
+    while(True):
+        # get input values
+        thresh = cv2.getTrackbarPos("threshold", window_name)
+        kern = cv2.getTrackbarPos("kernel", window_name)
+        itera = cv2.getTrackbarPos("iterations", window_name) 
+        
+        # process threshold
+        #_,thresh_img = cv2.threshold(bottle.diff_img, thresh, 255, cv2.THRESH_BINARY_INV)
+        sobelx = cv2.Sobel(bottle.diff_img, cv2.CV_64F, 1, 0, ksize=5)
+        sobely = cv2.Sobel(bottle.diff_img, cv2.CV_64F, 0, 2, ksize=7, ddepth=-1)
+
+        proc_img = sobely
+        
+        # undertake kernel related operations
+        #kernel = np.ones((kern,kern),np.uint8) # square image kernel used for erosion
+        
+        #proc_img = cv2.dilate(thresh_img, kernel, iterations=itera)
+        
+        #proc_img = cv2.morphologyEx(thresh_img, cv2.MORPH_CLOSE, kernel, iterations=itera)
+        #gradient = cv2.morphologyEx(proc_img, cv2.MORPH_GRADIENT, kernel, iterations=itera)
+
+        #proc_img = cv2.morphologyEx(thresh_img, cv2.MORPH_CLOSE, kernel)
+        #erosion = cv2.erode(dilation,kernel,iterations = itera) # refines all edges in the binary image
+        #closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel) 
+
+
+        cv2.imshow(window_name, proc_img)
+
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv2.destroyAllWindows()
+
+
+
+
 
 
 
@@ -482,34 +528,42 @@ def hsv_trials(bottle):
 
 
 def main():
-    # control_img = cv2.imread("./bottle_images/no_bottle.png")
+    control_img = cv2.imread("./bottle_images/no_bottle.png")
     # bottle_img = cv2.imread("./bottle_images/bottle_blank.png")
     # #bottle_img = cv2.imread("./bottle_images/bottle_whiskey.png")
     # #bottle_img = cv2.imread("./bottle_images/drink-bottle-green.png")
     # bottle_img = cv2.imread("./bottle_images/drink-bottle.png")
     # #bottle_img = cv2.imread("./bottle_images/bottle_metal.png")
     # #bottle_img = cv2.imread("./bottle_images/bottle_green_off_centre.png")
-    # #bottle_img = cv2.imread("./bottle_images/cola.png")
+    bottle_img = cv2.imread("./bottle_images/cola.png")
     # #bottle_img = cv2.imread("./bottle_images/bottle_green_half.png")
-    # bottle_img = cv2.imread("./bottle_images/water-glass-1.png")
-    # bottle_img = cv2.imread("./bottle_images/bottle_2.png")
+    #bottle_img = cv2.imread("./bottle_images/water-glass-1.png")
+    #bottle_img = cv2.imread("./bottle_images/bottle_2.png")
 
-    control_img = cv2.imread("./label_bottle_images/control_img.png")
-    bottle_img = cv2.imread("./label_bottle_images/green_bottle_v1.png")
+    #control_img = cv2.imread("./label_bottle_images/control_img.png")
+    #bottle_img = cv2.imread("./label_bottle_images/green_bottle_v1.png")
+
+
+    #control_img = cv2.imread("./live_bottle_images/control_img.png")
+    #bottle_img = cv2.imread("./live_bottle_images/bottle_img.png")
+
 
     bottle = Bottle(control_img, bottle_img)
-    #bottle.diff_img = find_bottle_diff_img(control_img, bottle_img)
-    bottle.diff_img = bottle_img
+    bottle.diff_img = find_bottle_diff_img(control_img, bottle_img)
+    #bottle.diff_img = bottle_img
     bottle.final_leveled_bottle_img = bottle_img
+
+
 
     #bottle_interact(bottle)
     #houghNormal(bottle)
     #houghP(bottle)
     #canny_hull_edge_detection(bottle)
-    #canny_edge_detection_v2(bottle)
-    hsv_trials(bottle)
+    canny_edge_detection_v2(bottle)
+    #hsv_trials(bottle)
     #cv2.imshow("bottle", bottle_img)
     #cv2.waitKey(0)
+    sobel_interaction(bottle)
 
 
 main()

@@ -26,7 +26,6 @@ class Bottle:
         self.final_leveled_bottle_img = raw_img.copy()
 
 
-
         # contour properties
         self.raw_contour = None
         self.no_neck_contour = None
@@ -42,6 +41,7 @@ class Bottle:
         self.neck_y_coord = 0
 
         # label properties 
+        self.label_contour = []
 
         # fluid level properties
         self.upper_internal_y_border = 0
@@ -51,7 +51,21 @@ class Bottle:
         self.symmetry_line_mono_y_vals = [] #stores monotone px values for center line used for level detection
         self.symmetry_line_mono_px_vals = [] #stores monotone px values for center line used for level detection
         self.fluid_level_y = 0
-   
+
+
+        # watershread properties
+        self.contour_widths = [] # this should replace watershed_x_range in future
+        self.watershed_x_range = 0
+        self.watershed_y_range = 0
+
+        self.upper_y_watershread_lim = 0 
+        self.lower_y_watershread_lim = 0
+        self.upper_x_watershread_lim = 0
+        self.lower_x_watershread_lim = 0
+
+        self.watershread_results = [] # watershread results stored as array of WaterShreadColumn objects. Array index matches y-height of contour
+        self.viable_y_range_pts_count = [] # index is the y-height of contour
+        self.viable_y_range_pts_count_weighted = []
    
         # processed properties
         self.bottle_shape = 'c'
@@ -71,9 +85,12 @@ class Bottle:
 
 # Class to store info on a single column  used in watershread analysis
 class WaterShreadColumn:
-    def __init__(self, x_coord=0, viable_y_pts=[]):
+    def __init__(self, x_coord=0, viable_y_pts=[], unviable_y_pts=[]):
         self.x = x_coord
         self.viable_y_pts = viable_y_pts
+        # used to store points found within the penalty zone of the container
+        # no logical utility, but useful in visualisation + debugging
+        self.unviable_y_pts = unviable_y_pts 
 
 
 

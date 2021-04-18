@@ -77,7 +77,7 @@ def remove_neck_from_bottle_contour(bottle):
             if (point[1] < y + h/2):
                 if ((abs(point[0] - (x+w/2))) < 0.8*(w/2)):
                     neck_border_points.append(point)
-                    print("FOUND POINT {},{}".format(point[0], point[1]))
+                    #print("FOUND POINT {},{}".format(point[0], point[1]))
 
         #TODO: this line should be uncommented. Right now we are only comparing all points to the first point
         #prev_borderline_point = point
@@ -103,7 +103,7 @@ def remove_neck_from_bottle_contour(bottle):
     #         neckless_contour.append([point])
     #neckless_contour = np.array(neckless_contour)
     neckless_contour = extract_subcontour(bottle.raw_contour, y_cutoff=neck_cutoff, add_bounding_pts=True)
-    print(neckless_contour)
+    #print(neckless_contour)
 
     # Update bottle object
     bottle.proc_contour_points = target_points
