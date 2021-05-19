@@ -1,10 +1,3 @@
-#    _     _______     _______ _     ____  _   _ ____  _____ ____  
-#   | |   | ____\ \   / / ____| |   / ___|| | | |  _ \| ____|  _ \ 
-#   | |   |  _|  \ \ / /|  _| | |   \___ \| |_| | |_) |  _| | | | |
-#   | |___| |___  \ V / | |___| |___ ___) |  _  |  _ <| |___| |_| |
-#   |_____|_____|  \_/  |_____|_____|____/|_| |_|_| \_\_____|____/ 
-                        
-
 
 # Module for:     t h e   L e v e l   s h r e d   m e t h o d
 # By Zach Preston
@@ -182,7 +175,7 @@ def gradient_test(lvshred_column, container_contour, running_viable_y_pts_tally,
 #   1. Returns the y-index of the image in which the waterlevel was detected
 #   2. Second val returns the certainity the algorithm has (the % of valid threshold detections)
 
-def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0.2], savgol_size=-1, gt_window_size=15, threshold=1.5, bottle_debug_obj=None):
+def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0.2], kernel=5, savgol_size=-1, gt_window_size=15, threshold=1.5, bottle_debug_obj=None):
 
     # STEP 1.
     # If the image is colour, convert it to black & white
@@ -286,7 +279,7 @@ def levelshred(img, container_contour, label_contour=[], penalty_padding=[0.2, 0
     if (bottle_debug_obj==None):
         return fluid_level_y, lvshred_confidence
     
-    #_____________________DEBUG OBJECT FOR TEST PROGRAM__________________________#
+    
     # UPDATE DEBUG VISUALISATION VARIABLES
     
     else:

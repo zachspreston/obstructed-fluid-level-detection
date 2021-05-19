@@ -24,4 +24,3 @@ def get_difference_img(bg_img, bottle_img, blur_kern=7):
 
     return diff_img_smoothed
 
-

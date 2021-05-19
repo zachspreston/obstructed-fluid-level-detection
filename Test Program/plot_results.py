@@ -42,6 +42,82 @@ def draw_bottle_and_fluid_contours_and_labels(bottle_obj):
     return bottle_obj
 
 
+def draw_bottle_and_fluid_contours_and_labels_levelshred(bottle_obj):
+    # Overlay contours into original image
+    # params are base image, contour maps, which contour in list (-1 for all), colour, thickness 
+    #cv2.drawContours(bottle_obj.final_leveled_bottle_img, bottle_obj.raw_contour, 0, (0,255,0), 3)
+    (x, y, w, h) = cv2.boundingRect(bottle_obj.processed_contour)
+    cv2.rectangle(bottle_obj.final_leveled_bottle_img, (x, y), (x + w, y + h), (255, 0, 255), 1)
+    #cv2.putText(bottle_obj.final_leveled_bottle_img, 'CONTAINER MAX @y={}'.format(y), (x+w+12, y),  cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,255), 3)
+
+    if (bottle_obj.has_fluid_level):
+        # Draw fluid level contour + text
+        (x, y, w, h) = cv2.boundingRect(bottle_obj.fluid_level_processed_contour)
+        cv2.line(bottle_obj.final_leveled_bottle_img, (x-50, bottle_obj.fluid_level_y), (x+w+50, bottle_obj.fluid_level_y), (0, 255, 0), thickness=4)
+        #cv2.rectangle(bottle_obj.final_leveled_bottle_img, (x, y), (x + w, y + h), (0, 255, 0), 4)
+        cv2.putText(bottle_obj.final_leveled_bottle_img, 'LVL @y={}'.format(bottle_obj.fluid_level_y), (x+w+20, y+h-80),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),2)
+        cv2.putText(bottle_obj.final_leveled_bottle_img, 'CONFID. {:.2f}%'.format(bottle_obj.confidence), (x+w+20, y+h-40),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+
+        # Add caption
+        #percent_full = (1.0 - (bottle_obj.volume_ml - bottle_obj.fluid_ml)/bottle_obj.volume_ml)*100
+        #cv2.putText(bottle_obj.final_leveled_bottle_img, 'FLUID LV: {:.1f}%'.format(percent_full), (int(bottle_obj.img_width*0.5), int(bottle_obj.img_height*0.98)),  cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 4)
+
+    else:
+        cv2.putText(bottle_obj.final_leveled_bottle_img, 'FLUID LV NOT FOUND', (int(bottle_obj.img_width*0.5), int(bottle_obj.img_height*0.98)),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 3)
+
+    # Draw Label Contour
+    if (len(bottle_obj.label_contour) > 0):
+        cv2.drawContours(bottle_obj.final_leveled_bottle_img, bottle_obj.label_contour, 0, (0,0,255), 4)
+
+
+    return bottle_obj
+
+
+
+
+
+def draw_bottle_and_fluid_contours_and_labels_levelshred_w_error(bottle_obj, actual_fluid_lv=0):
+
+    # Draw Label Contour
+    if (len(bottle_obj.label_contour) > 0):
+        cv2.drawContours(bottle_obj.final_leveled_bottle_img, bottle_obj.label_contour, 0, (0,0,255),2)
+
+
+    # Draw container rectangle
+    (x, y, w, h) = cv2.boundingRect(bottle_obj.processed_contour)
+    cv2.rectangle(bottle_obj.final_leveled_bottle_img, (x, y), (x + w, y + h), (255, 0, 255),2)
+
+    # Add bounding lines to image
+    # cv2.line(bottle_obj.final_leveled_bottle_img, (x, bottle_obj.upper_y_watershread_lim), (x+w, bottle_obj.upper_y_watershread_lim), (255, 255, 0), thickness=2)
+    # cv2.line(bottle_obj.final_leveled_bottle_img, (x, bottle_obj.lower_y_watershread_lim), (x+w, bottle_obj.lower_y_watershread_lim), (255, 255, 0), thickness=2)
+
+    # cv2.line(bottle_obj.final_leveled_bottle_img, (bottle_obj.upper_x_watershread_lim, y), (bottle_obj.upper_x_watershread_lim, y+h), (255, 255, 0), thickness=2)
+    # cv2.line(bottle_obj.final_leveled_bottle_img, (bottle_obj.lower_x_watershread_lim, y), (bottle_obj.lower_x_watershread_lim, y+h), (255, 255, 0), thickness=2)
+
+
+
+    # Determine error
+    lvl_error = abs(actual_fluid_lv-bottle_obj.fluid_level_y)/(h) * 100.0
+
+    # Draw fluid level contour + text
+    (x, y, w, h) = cv2.boundingRect(bottle_obj.fluid_level_processed_contour)
+    
+    # Draw actual fluid level
+    cv2.line(bottle_obj.final_leveled_bottle_img, (x, bottle_obj.fluid_level_y), (x+w+40, bottle_obj.fluid_level_y), (0, 255, 0), thickness=4)
+    cv2.line(bottle_obj.final_leveled_bottle_img, (x+w-40, actual_fluid_lv), (x+w+40, actual_fluid_lv), (255, 0, 255), thickness=3)
+    #cv2.rectangle(bottle_obj.final_leveled_bottle_img, (x, y), (x + w, y + h), (0, 255, 0), 4)
+    cv2.putText(bottle_obj.final_leveled_bottle_img, 'LVL @y={}'.format(bottle_obj.fluid_level_y), (x+w+20, y+h-120),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),2)
+    cv2.putText(bottle_obj.final_leveled_bottle_img, 'CONFID. {:.2f}%'.format(bottle_obj.confidence), (x+w+20, y+h-80),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+    cv2.putText(bottle_obj.final_leveled_bottle_img, 'ERR. {:.2f}%'.format(lvl_error), (x+w+20, y+h-40),  cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0),2)
+
+
+
+
+
+
+    return bottle_obj
+
+
 #____________________________Plotting Funcs__________________________#
 
 # Prints initial 2x5 plots
@@ -327,3 +403,72 @@ def plot_cv_results_label_removal(bottle):
     plt.imshow(cv2.cvtColor(bottle.final_leveled_bottle_img.copy(), cv2.COLOR_BGR2RGB), origin='upper')
     #plt.axis('off')
     plt.show()
+
+
+
+
+
+    # Prints initial 2x5 plots
+def plot_cv_results_final_res_only(bottle):
+
+    img = bottle.raw_bottle_img
+
+    # determine metadata
+    img_height, img_width = bottle.img_height, bottle.img_width
+    
+    num_rows, num_cols = 1, 3
+
+    fig, ax = plt.subplots(figsize=(12.8, 5.5))
+    fig.tight_layout()
+
+
+
+    # Plot estimated water level
+    # plot total px histogram
+    plt.subplot(num_rows, num_cols, 2)
+    plt.title('Net Vertical Px Histogram')
+    raw_pts, = plt.plot(bottle.viable_y_range_pts_count, bottle.symmetry_line_mono_y_vals, marker = 'x', linewidth=0, color='blue', markerfacecolor='green', markersize=5, label='Num raw detections')
+    perc_pts, = plt.plot(bottle.viable_y_range_pts_count_weighted, bottle.symmetry_line_mono_y_vals, marker = 'x', linewidth=0, color='green', markerfacecolor='green', markersize=5, label='detections % / width')
+    plt.ylim([img_height, 0])
+
+      # Plot line-of-symmetry intensity vals
+    plt.legend(handles=[raw_pts, perc_pts])
+    plt.subplot(num_rows, num_cols, 1)
+    plt.title('Levelshred Points')
+
+    # this is illustration of the contour widths determined
+    (x, y, w, h) = cv2.boundingRect(bottle.processed_contour)
+    contour_centre_line = int(x+w/2)
+    for i in range(0,len(bottle.contour_widths)):
+        if (i % 10 == 0):
+            plt.plot([contour_centre_line-bottle.contour_widths[i]/2, contour_centre_line+bottle.contour_widths[i]/2], [y+i, y+i], linewidth=1, color='green')
+
+    for col in bottle.watershread_results:
+        plt.plot([col.x]*len(col.viable_y_pts), col.viable_y_pts, marker = 'x', linewidth=0, color='red', markerfacecolor='red', markersize=5)
+        plt.plot([col.x]*len(col.unviable_y_pts), col.unviable_y_pts, marker = 'x', linewidth=0, color='#FCC', markerfacecolor='#FCC', markersize=5)
+    
+    
+    plt.ylim([img_height, 0])
+    plt.xlim([0, img_width])
+    plt.gca().set_aspect('equal', adjustable='box')
+
+
+
+
+    # Plot final image
+    plt.subplot(num_rows, num_cols,3)
+    plt.title('Fluid Volume Prediction')
+    plt.imshow(cv2.cvtColor(bottle.final_leveled_bottle_img.copy(), cv2.COLOR_BGR2RGB), origin='upper')
+    #plt.axis('off')
+
+    # plt.subplot(num_rows, num_cols, 4)
+    # plt.title('Smoothed Vertical Px Intensity')
+    # y = bottle.symmetry_line_mono_y_vals
+    # x = bottle.symmetry_line_mono_px_vals
+
+    # raw,=plt.plot(x,y, marker = 'x', linewidth=3, color='red', markerfacecolor='red', markersize=5, label='Raw')
+    # smoothed,=plt.plot(bottle.symmetry_line_mono_px_vals_smoothed, bottle.symmetry_line_mono_px_vals_smoothed_y, marker = 'x', linewidth=3, color='green', markerfacecolor='green', markersize=5, label='Smoothed')
+    # plt.ylim([img_height, 0])
+    # plt.legend(handles=[raw, smoothed])
+    plt.show()
+
